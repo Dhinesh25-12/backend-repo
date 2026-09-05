@@ -133,9 +133,9 @@ public class PolicyService {
     }
 
     private String generatePolicyNumber() {
-        long count = policyRepository.count() + 1;
         String year = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy"));
-        return "POL-" + year + "-" + String.format("%06d", count);
+        String unique = java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase();
+        return "POL-" + year + "-" + unique;
     }
 
     private PolicyResponse toResponse(Policy policy) {

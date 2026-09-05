@@ -58,6 +58,11 @@ ORDER BY revenue_month;
 
 -- ---------------------------------------------------------------------------
 -- FUNCTION: fn_generate_policy_number - sequence-friendly policy number generator
+-- NOTE: demonstrates a PL/pgSQL function for the SQL assessment; the
+-- MAX(id)+1 approach shown here is illustrative only and, like any
+-- read-then-write counter, is subject to race conditions under concurrent
+-- transactions. The application layer instead generates policy/claim/invoice
+-- numbers using randomised (UUID-based) identifiers to avoid that race.
 -- ---------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION fn_generate_policy_number()
 RETURNS VARCHAR AS $$

@@ -102,9 +102,9 @@ public class PaymentService {
     }
 
     private String generateNumber(String prefix) {
-        long count = paymentRepository.count() + 1;
         String year = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy"));
-        return prefix + "-" + year + "-" + String.format("%06d", count) + "-" + System.nanoTime() % 1000;
+        String unique = java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase();
+        return prefix + "-" + year + "-" + unique;
     }
 
     private PaymentResponse toResponse(Payment payment) {

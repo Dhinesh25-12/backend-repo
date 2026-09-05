@@ -117,9 +117,9 @@ public class ClaimService {
     }
 
     private String generateClaimNumber() {
-        long count = claimRepository.count() + 1;
         String year = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy"));
-        return "CLM-" + year + "-" + String.format("%06d", count);
+        String unique = java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase();
+        return "CLM-" + year + "-" + unique;
     }
 
     private ClaimResponse toResponse(Claim claim) {
