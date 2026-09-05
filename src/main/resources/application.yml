@@ -1,14 +1,21 @@
 server:
   port: ${SERVER_PORT:8080}
+  shutdown: graceful
 
 spring:
   application:
     name: insurance-portal
+  lifecycle:
+    timeout-per-shutdown-phase: ${SHUTDOWN_TIMEOUT:20s}
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/insurance_portal}
     username: ${DB_USERNAME:insurance_user}
     password: ${DB_PASSWORD:insurance_pass}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX_SIZE:10}
+      minimum-idle: ${DB_POOL_MIN_IDLE:2}
+      connection-timeout: ${DB_POOL_CONNECTION_TIMEOUT_MS:30000}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -44,6 +51,13 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
 
 logging:
   level:

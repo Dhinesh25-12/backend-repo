@@ -1,0 +1,38 @@
+version: 0.2
+
+env:
+  variables:
+    ECR_REPOSITORY: "insurance-portal"
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto17
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - AWS_REGION=${AWS_REGION:-$AWS_DEFAULT_REGION}
+      - ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+      - aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+      - IMAGE_TAG="${CODEBUILD_RESOLVED_SOURCE_VERSION:-latest}"
+  build:
+    commands:
+      - echo Running tests and building jar...
+      - mvn -B clean verify
+      - echo Building Docker image...
+      - docker build -t "$ECR_REPOSITORY:$IMAGE_TAG" .
+      - docker tag "$ECR_REPOSITORY:$IMAGE_TAG" "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+      - docker tag "$ECR_REPOSITORY:$IMAGE_TAG" "$ECR_REGISTRY/$ECR_REPOSITORY:latest"
+  post_build:
+    commands:
+      - echo Pushing Docker image to ECR...
+      - docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+      - docker push "$ECR_REGISTRY/$ECR_REPOSITORY:latest"
+      - printf '[{"name":"insurance-portal","imageUri":"%s"}]' "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" > imagedefinitions.json
+
+artifacts:
+  files:
+    - imagedefinitions.json
+    - aws/ecs-task-definition.json
