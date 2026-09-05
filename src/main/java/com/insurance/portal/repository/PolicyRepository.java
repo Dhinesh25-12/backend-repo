@@ -14,4 +14,5 @@ public interface PolicyRepository extends JpaRepository<Policy, Long> {
     Page<Policy> findByAgentId(Long agentId, Pageable pageable);
     Page<Policy> findByStatus(PolicyStatus status, Pageable pageable);
     Page<Policy> findByCustomerIdAndStatus(Long customerId, PolicyStatus status, Pageable pageable);
+    long countByStatus(PolicyStatus status);
 }

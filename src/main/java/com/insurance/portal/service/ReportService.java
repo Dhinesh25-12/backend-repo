@@ -58,19 +58,13 @@ public class ReportService {
     }
 
     public AdminSummaryReport adminSummary() {
-        BigDecimal totalPremium = paymentRepository.findAll().stream()
-                .map(p -> p.getAmount())
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalPremium = paymentRepository.sumSuccessfulPaymentAmounts();
         long totalClaims = claimRepository.count();
-        long settledClaims = claimRepository.findAll().stream()
-                .filter(c -> c.getStatus() == ClaimStatus.SETTLED)
-                .count();
+        long settledClaims = claimRepository.countByStatus(ClaimStatus.SETTLED);
         BigDecimal ratio = totalClaims == 0 ? BigDecimal.ZERO
                 : BigDecimal.valueOf(settledClaims * 100.0 / totalClaims).setScale(2, java.math.RoundingMode.HALF_UP);
         long totalPolicies = policyRepository.count();
-        long activePolicies = policyRepository.findAll().stream()
-                .filter(p -> p.getStatus() == PolicyStatus.ACTIVE)
-                .count();
+        long activePolicies = policyRepository.countByStatus(PolicyStatus.ACTIVE);
         return new AdminSummaryReport(totalPremium, totalClaims, settledClaims, ratio, totalPolicies, activePolicies);
     }
 

@@ -24,10 +24,8 @@ public class JwtService {
                        @Value("${app.jwt.expiration-ms}") long expirationMs) {
         byte[] keyBytes = secret.getBytes(java.nio.charset.StandardCharsets.UTF_8);
         if (keyBytes.length < 32) {
-            // pad to satisfy HS256 minimum key length requirement
-            byte[] padded = new byte[32];
-            System.arraycopy(keyBytes, 0, padded, 0, Math.min(keyBytes.length, 32));
-            keyBytes = padded;
+            throw new IllegalStateException(
+                    "app.jwt.secret must be at least 32 bytes long to satisfy the HS256 minimum key length requirement");
         }
         this.signingKey = Keys.hmacShaKeyFor(keyBytes);
         this.expirationMs = expirationMs;
