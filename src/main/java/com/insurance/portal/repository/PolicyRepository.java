@@ -5,6 +5,7 @@ import com.insurance.portal.entity.PolicyStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +18,14 @@ public interface PolicyRepository extends JpaRepository<Policy, Long> {
     Page<Policy> findByCustomerIdAndStatus(Long customerId, PolicyStatus status, Pageable pageable);
     Page<Policy> findByCancellationRequestedTrue(Pageable pageable);
     long countByStatus(PolicyStatus status);
+
+    @Query("SELECT p.status AS status, COUNT(p) AS total FROM Policy p GROUP BY p.status")
+    List<PolicyStatusCount> countGroupedByStatus();
+
+    interface PolicyStatusCount {
+        PolicyStatus getStatus();
+        long getTotal();
+    }
     long countByCustomerIdAndStatus(Long customerId, PolicyStatus status);
     List<Policy> findTop5ByOrderByCreatedAtDesc();
 }

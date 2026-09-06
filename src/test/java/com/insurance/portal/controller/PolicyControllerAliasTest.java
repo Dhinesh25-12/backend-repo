@@ -130,6 +130,16 @@ class PolicyControllerAliasTest {
     }
 
     @Test
+    @WithMockUser(username = "customer1", roles = "CUSTOMER")
+    void renewalQuoteRejectsWhenPolicyNotOwnedByCustomer() throws Exception {
+        when(policyService.previewRenewal(anyString(), org.mockito.ArgumentMatchers.eq(false), any()))
+                .thenThrow(new com.insurance.portal.exception.BadRequestException("Policy does not belong to the current user"));
+
+        mockMvc.perform(get("/api/policies/1/renewal-quote"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     @WithMockUser(roles = "ADMIN")
     void cancellationRequestsQueueRequiresAdmin() throws Exception {
         Page<PolicyResponse> page = new PageImpl<>(List.of(samplePolicy()));

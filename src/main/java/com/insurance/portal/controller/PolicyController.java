@@ -4,6 +4,7 @@ import com.insurance.portal.dto.request.CancelPolicyRequest;
 import com.insurance.portal.dto.request.PurchasePolicyRequest;
 import com.insurance.portal.dto.response.PolicyResponse;
 import com.insurance.portal.dto.response.RenewalQuoteResponse;
+import com.insurance.portal.entity.RoleName;
 import com.insurance.portal.service.PolicyService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -48,9 +49,13 @@ public class PolicyController {
     @GetMapping("/{id}/renewal-quote")
     @PreAuthorize("hasAnyRole('CUSTOMER','ADMIN')")
     public ResponseEntity<RenewalQuoteResponse> renewalQuote(Authentication authentication, @PathVariable Long id) {
-        boolean admin = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        return ResponseEntity.ok(policyService.previewRenewal(authentication.getName(), admin, id));
+        return ResponseEntity.ok(policyService.previewRenewal(authentication.getName(), isAdmin(authentication), id));
+    }
+
+    private boolean isAdmin(Authentication authentication) {
+        String adminAuthority = "ROLE_" + RoleName.ADMIN.name();
+        return authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals(adminAuthority));
     }
 
     @PostMapping("/{id}/cancel")

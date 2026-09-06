@@ -65,9 +65,8 @@ public class PolicyService {
         if (policy.getStatus() == PolicyStatus.CANCELLED) {
             throw new BadRequestException("Cannot renew a cancelled policy");
         }
-        LocalDate newStart = policy.getEndDate().isAfter(LocalDate.now()) ? policy.getEndDate() : LocalDate.now();
-        LocalDate newEnd = newStart.plusMonths(policy.getProduct().getTenureMonths());
-        policy.setStartDate(newStart);
+        LocalDate newEnd = computeRenewalEndDate(policy);
+        policy.setStartDate(computeRenewalStartDate(policy));
         policy.setEndDate(newEnd);
         policy.setStatus(PolicyStatus.ACTIVE);
         policyRepository.save(policy);
@@ -124,9 +123,16 @@ public class PolicyService {
         if (!admin && !policy.getCustomer().getUser().getUsername().equals(username)) {
             throw new BadRequestException("Policy does not belong to the current user");
         }
-        LocalDate newStart = policy.getEndDate().isAfter(LocalDate.now()) ? policy.getEndDate() : LocalDate.now();
-        LocalDate newEnd = newStart.plusMonths(policy.getProduct().getTenureMonths());
+        LocalDate newEnd = computeRenewalEndDate(policy);
         return new RenewalQuoteResponse(policy.getId(), policy.getPremiumAmount(), newEnd);
+    }
+
+    private LocalDate computeRenewalStartDate(Policy policy) {
+        return policy.getEndDate().isAfter(LocalDate.now()) ? policy.getEndDate() : LocalDate.now();
+    }
+
+    private LocalDate computeRenewalEndDate(Policy policy) {
+        return computeRenewalStartDate(policy).plusMonths(policy.getProduct().getTenureMonths());
     }
 
     public Page<PolicyResponse> listCancellationRequests(Pageable pageable) {

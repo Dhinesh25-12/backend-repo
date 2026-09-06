@@ -42,13 +42,7 @@ public class DashboardService {
         long claimsFiled = claimRepository.count();
         var totalPayments = paymentRepository.sumSuccessfulPaymentAmounts();
 
-        List<PolicySplitItem> policySplit = new ArrayList<>();
-        for (PolicyStatus status : PolicyStatus.values()) {
-            policySplit.add(PolicySplitItem.builder()
-                    .category(status.name())
-                    .count((int) policyRepository.countByStatus(status))
-                    .build());
-        }
+        List<PolicySplitItem> policySplit = buildPolicySplit();
 
         List<RevenueTrendItem> revenueTrend = reportService.monthlyRevenueTrend().stream()
                 .map(this::toRevenueTrendItem)
@@ -63,6 +57,24 @@ public class DashboardService {
     private RevenueTrendItem toRevenueTrendItem(MonthlyRevenueReport report) {
         long revenue = report.totalAmount() == null ? 0L : report.totalAmount().longValue();
         return RevenueTrendItem.builder().month(report.month()).revenue(revenue).build();
+    }
+
+    private List<PolicySplitItem> buildPolicySplit() {
+        java.util.Map<PolicyStatus, Long> counts = new java.util.EnumMap<>(PolicyStatus.class);
+        for (PolicyStatus status : PolicyStatus.values()) {
+            counts.put(status, 0L);
+        }
+        for (PolicyRepository.PolicyStatusCount row : policyRepository.countGroupedByStatus()) {
+            counts.put(row.getStatus(), row.getTotal());
+        }
+        List<PolicySplitItem> policySplit = new ArrayList<>();
+        for (PolicyStatus status : PolicyStatus.values()) {
+            policySplit.add(PolicySplitItem.builder()
+                    .category(status.name())
+                    .count(counts.get(status).intValue())
+                    .build());
+        }
+        return policySplit;
     }
 
     private List<ActivityItem> recentActivity() {
