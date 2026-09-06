@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -24,9 +25,16 @@ public class ClaimController {
 
     private final ClaimService claimService;
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<ClaimResponse> file(Authentication authentication, @Valid @RequestBody FileClaimRequest request) {
+        return ResponseEntity.ok(claimService.fileClaim(authentication.getName(), request));
+    }
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<ClaimResponse> fileMultipart(Authentication authentication,
+                                                        @Valid @ModelAttribute FileClaimRequest request) {
         return ResponseEntity.ok(claimService.fileClaim(authentication.getName(), request));
     }
 
