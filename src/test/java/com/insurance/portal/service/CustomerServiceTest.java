@@ -118,6 +118,16 @@ class CustomerServiceTest {
     }
 
     @Test
+    void getCustomerFallsBackToUsernameWhenNameMissing() {
+        customer.getUser().setFirstName(null);
+        customer.getUser().setLastName(" ");
+        when(customerRepository.findById(3L)).thenReturn(Optional.of(customer));
+        when(policyRepository.countByCustomerId(3L)).thenReturn(0L);
+
+        assertThat(customerService.getCustomer(3L).fullName()).isEqualTo("jdoe");
+    }
+
+    @Test
     void getCustomerThrowsWhenMissing() {
         when(customerRepository.findById(99L)).thenReturn(Optional.empty());
 
