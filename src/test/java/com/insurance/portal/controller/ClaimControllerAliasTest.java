@@ -2,6 +2,7 @@ package com.insurance.portal.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.insurance.portal.config.SecurityConfig;
+import com.insurance.portal.dto.request.ClaimDecisionRequest;
 import com.insurance.portal.dto.request.UpdateClaimStatusRequest;
 import com.insurance.portal.dto.response.ClaimResponse;
 import com.insurance.portal.entity.ClaimStatus;
@@ -30,6 +31,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ClaimController.class)
@@ -88,6 +90,64 @@ class ClaimControllerAliasTest {
     @WithMockUser(roles = "CUSTOMER")
     void patchStatusForbiddenForCustomer() throws Exception {
         UpdateClaimStatusRequest request = new UpdateClaimStatusRequest(ClaimStatus.SETTLED, "Looks good");
+        mockMvc.perform(patch("/api/claims/1/status")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "agent1", roles = "AGENT")
+    void agentCanViewClaimById() throws Exception {
+        when(claimService.getClaim(1L)).thenReturn(sampleClaim());
+
+        mockMvc.perform(get("/api/claims/1"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "agent1", roles = "AGENT")
+    void agentCanViewClaimByClaimNumber() throws Exception {
+        when(claimService.getByClaimNumber("CLM-2024-ABC")).thenReturn(sampleClaim());
+
+        mockMvc.perform(get("/api/claims/number/CLM-2024-ABC"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "agent1", roles = "AGENT")
+    void agentCanViewClaimsByPolicy() throws Exception {
+        when(claimService.listByPolicy(anyLong(), any())).thenReturn(new PageImpl<>(List.of(sampleClaim())));
+
+        mockMvc.perform(get("/api/claims/policy/1"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "agent1", roles = "AGENT")
+    void agentCanViewClaimsQueue() throws Exception {
+        when(claimService.queue(any(), any())).thenReturn(new PageImpl<>(List.of(sampleClaim())));
+
+        mockMvc.perform(get("/api/claims/queue"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "agent1", roles = "AGENT")
+    void decideForbiddenForAgent() throws Exception {
+        ClaimDecisionRequest request = new ClaimDecisionRequest(ClaimStatus.APPROVED, "Approved");
+
+        mockMvc.perform(put("/api/claims/1/decision")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "agent1", roles = "AGENT")
+    void patchStatusForbiddenForAgent() throws Exception {
+        UpdateClaimStatusRequest request = new UpdateClaimStatusRequest(ClaimStatus.SETTLED, "Looks good");
+
         mockMvc.perform(patch("/api/claims/1/status")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(request)))
