@@ -26,6 +26,15 @@ public interface PolicyRepository extends JpaRepository<Policy, Long> {
         PolicyStatus getStatus();
         long getTotal();
     }
+
+    @Query("SELECT p.product.category AS category, COUNT(p) AS total FROM Policy p "
+            + "WHERE p.status = 'ACTIVE' GROUP BY p.product.category")
+    List<PolicyCategoryCount> countGroupedByProductCategory();
+
+    interface PolicyCategoryCount {
+        String getCategory();
+        long getTotal();
+    }
     long countByCustomerIdAndStatus(Long customerId, PolicyStatus status);
     List<Policy> findTop5ByOrderByCreatedAtDesc();
 }

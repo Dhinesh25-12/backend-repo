@@ -60,18 +60,11 @@ public class DashboardService {
     }
 
     private List<PolicySplitItem> buildPolicySplit() {
-        java.util.Map<PolicyStatus, Long> counts = new java.util.EnumMap<>(PolicyStatus.class);
-        for (PolicyStatus status : PolicyStatus.values()) {
-            counts.put(status, 0L);
-        }
-        for (PolicyRepository.PolicyStatusCount row : policyRepository.countGroupedByStatus()) {
-            counts.put(row.getStatus(), row.getTotal());
-        }
         List<PolicySplitItem> policySplit = new ArrayList<>();
-        for (PolicyStatus status : PolicyStatus.values()) {
+        for (PolicyRepository.PolicyCategoryCount row : policyRepository.countGroupedByProductCategory()) {
             policySplit.add(PolicySplitItem.builder()
-                    .category(status.name())
-                    .count(counts.get(status).intValue())
+                    .category(row.getCategory())
+                    .count((int) row.getTotal())
                     .build());
         }
         return policySplit;
