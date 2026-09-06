@@ -3,6 +3,7 @@ package com.insurance.portal.service;
 import com.insurance.portal.dto.request.CancelPolicyRequest;
 import com.insurance.portal.dto.request.PurchasePolicyRequest;
 import com.insurance.portal.dto.response.PolicyResponse;
+import com.insurance.portal.dto.response.RenewalQuoteResponse;
 import com.insurance.portal.entity.*;
 import com.insurance.portal.exception.BadRequestException;
 import com.insurance.portal.exception.ResourceNotFoundException;
@@ -97,6 +98,39 @@ public class PolicyService {
         policy.setStatus(PolicyStatus.CANCELLED);
         policyRepository.save(policy);
         return toResponse(policy);
+    }
+
+    @Transactional
+    public PolicyResponse rejectCancellation(Long policyId) {
+        Policy policy = policyRepository.findById(policyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Policy not found: " + policyId));
+        if (!policy.isCancellationRequested()) {
+            throw new BadRequestException("No cancellation request pending for this policy");
+        }
+        policy.setCancellationRequested(false);
+        policy.setCancellationReason(null);
+        policy.setStatus(PolicyStatus.ACTIVE);
+        policyRepository.save(policy);
+        return toResponse(policy);
+    }
+
+    /**
+     * Computes a preview of the renewal premium/date without persisting anything,
+     * reusing the same calculation as {@link #renewPolicy(String, Long)}.
+     */
+    public RenewalQuoteResponse previewRenewal(String username, boolean admin, Long policyId) {
+        Policy policy = policyRepository.findById(policyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Policy not found: " + policyId));
+        if (!admin && !policy.getCustomer().getUser().getUsername().equals(username)) {
+            throw new BadRequestException("Policy does not belong to the current user");
+        }
+        LocalDate newStart = policy.getEndDate().isAfter(LocalDate.now()) ? policy.getEndDate() : LocalDate.now();
+        LocalDate newEnd = newStart.plusMonths(policy.getProduct().getTenureMonths());
+        return new RenewalQuoteResponse(policy.getId(), policy.getPremiumAmount(), newEnd);
+    }
+
+    public Page<PolicyResponse> listCancellationRequests(Pageable pageable) {
+        return policyRepository.findByCancellationRequestedTrue(pageable).map(this::toResponse);
     }
 
     public PolicyResponse getPolicy(Long id) {

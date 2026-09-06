@@ -2,6 +2,7 @@ package com.insurance.portal.controller;
 
 import com.insurance.portal.dto.request.ClaimDecisionRequest;
 import com.insurance.portal.dto.request.FileClaimRequest;
+import com.insurance.portal.dto.request.UpdateClaimStatusRequest;
 import com.insurance.portal.dto.response.ClaimResponse;
 import com.insurance.portal.entity.ClaimStatus;
 import com.insurance.portal.service.ClaimService;
@@ -36,6 +37,14 @@ public class ClaimController {
         return ResponseEntity.ok(claimService.decideClaim(authentication.getName(), id, request));
     }
 
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasRole('CLAIMS_OFFICER')")
+    public ResponseEntity<ClaimResponse> updateStatus(Authentication authentication, @PathVariable Long id,
+                                                       @Valid @RequestBody UpdateClaimStatusRequest request) {
+        ClaimDecisionRequest decision = new ClaimDecisionRequest(request.status(), request.remarks());
+        return ResponseEntity.ok(claimService.decideClaim(authentication.getName(), id, decision));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ClaimResponse> get(@PathVariable Long id) {
         return ResponseEntity.ok(claimService.getClaim(id));
@@ -50,6 +59,12 @@ public class ClaimController {
     @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<Page<ClaimResponse>> myClaims(Authentication authentication, Pageable pageable) {
         return ResponseEntity.ok(claimService.listForCustomer(authentication.getName(), pageable));
+    }
+
+    @GetMapping("/my")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<Page<ClaimResponse>> myClaimsAlias(Authentication authentication, Pageable pageable) {
+        return myClaims(authentication, pageable);
     }
 
     @GetMapping("/policy/{policyId}")

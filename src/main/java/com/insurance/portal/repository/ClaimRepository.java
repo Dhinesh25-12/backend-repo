@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ClaimRepository extends JpaRepository<Claim, Long> {
@@ -14,4 +15,6 @@ public interface ClaimRepository extends JpaRepository<Claim, Long> {
     Page<Claim> findByPolicyId(Long policyId, Pageable pageable);
     Page<Claim> findByStatus(ClaimStatus status, Pageable pageable);
     long countByStatus(ClaimStatus status);
+    long countByCustomerId(Long customerId);
+    List<Claim> findTop5ByOrderByCreatedAtDesc();
 }

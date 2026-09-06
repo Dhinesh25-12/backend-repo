@@ -1,7 +1,10 @@
 package com.insurance.portal.controller;
 
 import com.insurance.portal.dto.response.AdminSummaryReport;
+import com.insurance.portal.dto.response.ClaimsRatioReport;
+import com.insurance.portal.dto.response.CustomerSummaryReport;
 import com.insurance.portal.dto.response.MonthlyRevenueReport;
+import com.insurance.portal.dto.response.PremiumCollectionReport;
 import com.insurance.portal.dto.response.ProductPerformanceReport;
 import com.insurance.portal.dto.response.TopCustomerReport;
 import com.insurance.portal.service.ReportService;
@@ -42,6 +45,12 @@ public class ReportController {
         return ResponseEntity.ok(reportService.claimsSubmittedForCustomer(authentication.getName(), pageable));
     }
 
+    @GetMapping("/customer/summary")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<CustomerSummaryReport> customerSummary(Authentication authentication) {
+        return ResponseEntity.ok(reportService.customerSummary(authentication.getName()));
+    }
+
     @GetMapping("/admin/summary")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AdminSummaryReport> adminSummary() {
@@ -64,5 +73,17 @@ public class ReportController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ProductPerformanceReport>> productPerformance() {
         return ResponseEntity.ok(reportService.productPerformance());
+    }
+
+    @GetMapping("/admin/premium-collection")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<PremiumCollectionReport>> premiumCollection() {
+        return ResponseEntity.ok(reportService.premiumCollectionTrend());
+    }
+
+    @GetMapping("/admin/claims-ratio")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ClaimsRatioReport>> claimsRatio() {
+        return ResponseEntity.ok(reportService.claimsRatioTrend());
     }
 }

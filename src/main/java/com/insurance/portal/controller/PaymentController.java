@@ -34,6 +34,11 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.getInvoice(invoiceNumber));
     }
 
+    @GetMapping("/{paymentId}/invoice")
+    public ResponseEntity<PaymentResponse> invoiceByPaymentId(@PathVariable Long paymentId) {
+        return ResponseEntity.ok(paymentService.getInvoiceByPaymentId(paymentId));
+    }
+
     @GetMapping("/{id}/receipt")
     public ResponseEntity<byte[]> receipt(@PathVariable Long id) {
         byte[] content = paymentService.generateReceipt(id);
@@ -47,6 +52,12 @@ public class PaymentController {
     @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<Page<PaymentResponse>> myPayments(Authentication authentication, Pageable pageable) {
         return ResponseEntity.ok(paymentService.listForCustomer(authentication.getName(), pageable));
+    }
+
+    @GetMapping("/history")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<Page<PaymentResponse>> paymentHistory(Authentication authentication, Pageable pageable) {
+        return myPayments(authentication, pageable);
     }
 
     @GetMapping("/policy/{policyId}")
