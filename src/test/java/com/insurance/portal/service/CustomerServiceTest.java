@@ -22,6 +22,9 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -86,8 +89,7 @@ class CustomerServiceTest {
         assertThat(response.username()).isEqualTo("jdoe");
         assertThat(response.fullName()).isEqualTo("John Doe");
         assertThat(response.policyCount()).isEqualTo(2L);
-        verify(customerRepository, never()).search(org.mockito.ArgumentMatchers.anyString(),
-                org.mockito.ArgumentMatchers.any());
+        verify(customerRepository, never()).search(anyString(), any());
     }
 
     @Test
@@ -144,12 +146,20 @@ class CustomerServiceTest {
     }
 
     @Test
+    void listPoliciesThrowsForUnknownCustomer() {
+        when(customerRepository.existsById(42L)).thenReturn(false);
+
+        assertThatThrownBy(() -> customerService.listPolicies(42L, pageable))
+                .isInstanceOf(ResourceNotFoundException.class);
+        verify(policyService, never()).listByCustomerId(anyLong(), any());
+    }
+
+    @Test
     void listClaimsThrowsForUnknownCustomer() {
         when(customerRepository.existsById(42L)).thenReturn(false);
 
         assertThatThrownBy(() -> customerService.listClaims(42L, pageable))
                 .isInstanceOf(ResourceNotFoundException.class);
-        verify(claimService, never()).listByCustomerId(org.mockito.ArgumentMatchers.anyLong(),
-                org.mockito.ArgumentMatchers.any());
+        verify(claimService, never()).listByCustomerId(anyLong(), any());
     }
 }
