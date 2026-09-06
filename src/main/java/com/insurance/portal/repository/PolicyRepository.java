@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +25,15 @@ public interface PolicyRepository extends JpaRepository<Policy, Long> {
 
     interface PolicyStatusCount {
         PolicyStatus getStatus();
+        long getTotal();
+    }
+
+    @Query("SELECT p.product.category AS category, COUNT(p) AS total FROM Policy p "
+            + "WHERE p.status = :status GROUP BY p.product.category")
+    List<PolicyCategoryCount> countGroupedByProductCategory(@Param("status") PolicyStatus status);
+
+    interface PolicyCategoryCount {
+        String getCategory();
         long getTotal();
     }
     long countByCustomerIdAndStatus(Long customerId, PolicyStatus status);
