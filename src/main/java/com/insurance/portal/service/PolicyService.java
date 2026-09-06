@@ -28,6 +28,7 @@ public class PolicyService {
     private final PolicyRepository policyRepository;
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
+    private final PlatformSettingService platformSettingService;
 
     @Transactional
     public PolicyResponse purchasePolicy(String username, PurchasePolicyRequest request) {
@@ -154,6 +155,10 @@ public class PolicyService {
         Customer customer = customerRepository.findByUserUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer profile not found for user: " + username));
         return policyRepository.findByCustomerId(customer.getId(), pageable).map(this::toResponse);
+    }
+
+    public Page<PolicyResponse> listByCustomerId(Long customerId, Pageable pageable) {
+        return policyRepository.findByCustomerId(customerId, pageable).map(this::toResponse);
     }
 
     public Page<PolicyResponse> listForAgent(Long agentId, Pageable pageable) {

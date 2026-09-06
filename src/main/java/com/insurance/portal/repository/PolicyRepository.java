@@ -6,7 +6,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +28,24 @@ public interface PolicyRepository extends JpaRepository<Policy, Long> {
         PolicyStatus getStatus();
         long getTotal();
     }
+
+    @Query("SELECT p.product.category AS category, COUNT(p) AS total FROM Policy p "
+            + "WHERE p.status = :status GROUP BY p.product.category")
+    List<PolicyCategoryCount> countGroupedByProductCategory(@Param("status") PolicyStatus status);
+
+    interface PolicyCategoryCount {
+        String getCategory();
+        long getTotal();
+    }
     long countByCustomerIdAndStatus(Long customerId, PolicyStatus status);
+    long countByCustomerId(Long customerId);
+
+    @Query("SELECT p.customer.id AS customerId, COUNT(p) AS total FROM Policy p WHERE p.customer.id IN :customerIds GROUP BY p.customer.id")
+    List<PolicyCustomerCount> countGroupedByCustomerIds(@Param("customerIds") Collection<Long> customerIds);
+
+    interface PolicyCustomerCount {
+        Long getCustomerId();
+        long getTotal();
+    }
     List<Policy> findTop5ByOrderByCreatedAtDesc();
 }

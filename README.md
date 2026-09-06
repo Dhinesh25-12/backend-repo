@@ -113,6 +113,7 @@ Health check: `http://localhost:8080/actuator/health`
 | `/api/reports/customer/**`                | ✔        |       |                  |       |
 | `/api/reports/admin/**`                   |          |       |                  | ✔     |
 | `/api/users` (list/role/activate)         |          |       |                  | ✔     |
+| `/api/customers` (list/detail/policies/claims) |     | ✔     |                  | ✔     |
 
 ## Sample curl commands
 

@@ -1,5 +1,6 @@
 package com.insurance.portal.service;
 
+import com.insurance.portal.dto.request.ChangePasswordRequest;
 import com.insurance.portal.dto.request.UpdateProfileRequest;
 import com.insurance.portal.dto.request.UpdateUserRoleRequest;
 import com.insurance.portal.dto.request.UpdateUserRolesRequest;
@@ -16,6 +17,7 @@ import com.insurance.portal.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,10 +33,11 @@ public class UserService {
     private final AppUserRepository appUserRepository;
     private final CustomerRepository customerRepository;
     private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public UserResponse getProfile(String username) {
         AppUser user = findByUsername(username);
-        return toResponse(user);
+        return toProfileResponse(user, customerRepository.findByUserId(user.getId()).orElse(null));
     }
 
     @Transactional
@@ -51,9 +54,27 @@ public class UserService {
             customer.setCity(request.city());
             customer.setState(request.state());
             customer.setPostalCode(request.postalCode());
+            customer.setDateOfBirth(request.dateOfBirth());
+            customer.setKycIdType(request.kycIdType());
+            customer.setKycIdNumber(request.kycIdNumber());
             customerRepository.save(customer);
         }
-        return toResponse(user);
+        return toProfileResponse(user, customer);
+    }
+
+    /**
+     * Changes the authenticated user's password after verifying the current one.
+     * Known limitation: JWTs are stateless and there is no token blocklist, so tokens
+     * issued before the change remain valid until their natural expiry.
+     */
+    @Transactional
+    public void changePassword(String username, ChangePasswordRequest request) {
+        AppUser user = findByUsername(username);
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+            throw new BadRequestException("Current password is incorrect");
+        }
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        appUserRepository.save(user);
     }
 
     public Page<UserResponse> listUsers(Pageable pageable) {
@@ -112,6 +133,24 @@ public class UserService {
     private UserResponse toResponse(AppUser user) {
         List<String> roles = user.getRoles().stream().map(r -> r.getName().name()).collect(Collectors.toList());
         return new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getFirstName(),
-                user.getLastName(), user.getPhone(), user.isActive(), roles);
+                user.getLastName(), user.getPhone(), user.isActive(), roles,
+                null, null, null, null, null, null, null);
+    }
+
+    /** Profile responses additionally expose the customer/KYC details when the user is a customer. */
+    private UserResponse toProfileResponse(AppUser user, Customer customer) {
+        UserResponse base = toResponse(user);
+        if (customer == null) {
+            return base;
+        }
+        return new UserResponse(base.id(), base.username(), base.email(), base.firstName(),
+                base.lastName(), base.phone(), base.active(), base.roles(),
+                customer.getAddress(),
+                customer.getCity(),
+                customer.getState(),
+                customer.getPostalCode(),
+                customer.getDateOfBirth(),
+                customer.getKycIdType(),
+                customer.getKycIdNumber());
     }
 }
