@@ -73,7 +73,7 @@ public class ClaimController {
     }
 
     @GetMapping("/queue")
-    @PreAuthorize("hasRole('CLAIMS_OFFICER')")
+    @PreAuthorize("hasAnyRole('CLAIMS_OFFICER', 'AGENT')")
     public ResponseEntity<Page<ClaimResponse>> queue(@RequestParam(required = false) ClaimStatus status, Pageable pageable) {
         return ResponseEntity.ok(claimService.queue(status, pageable));
     }
