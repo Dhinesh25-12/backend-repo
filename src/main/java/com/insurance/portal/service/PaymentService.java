@@ -62,11 +62,13 @@ public class PaymentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice not found: " + invoiceNumber)));
     }
 
+    @Transactional
     public PaymentResponse getInvoiceByPaymentId(Long paymentId) {
         return toResponse(paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found: " + paymentId)));
     }
 
+    @Transactional
     public byte[] generateReceipt(Long paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found: " + paymentId));

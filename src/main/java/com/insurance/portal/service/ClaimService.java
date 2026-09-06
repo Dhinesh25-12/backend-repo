@@ -98,7 +98,7 @@ public class ClaimService {
     public Page<ClaimResponse> listByPolicy(Long policyId, Pageable pageable) {
         return claimRepository.findByPolicyId(policyId, pageable).map(this::toResponse);
     }
-
+@Transactional
     public Page<ClaimResponse> queue(ClaimStatus status, Pageable pageable) {
         if (status != null) {
             return claimRepository.findByStatus(status, pageable).map(this::toResponse);
