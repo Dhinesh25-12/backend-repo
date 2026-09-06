@@ -141,6 +141,7 @@ public class PolicyService {
         return policyRepository.findByCancellationRequestedTrue(pageable).map(this::toResponse);
     }
 
+
     public PolicyResponse getPolicy(Long id) {
         return toResponse(policyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Policy not found: " + id)));
@@ -151,6 +152,7 @@ public class PolicyService {
                 .orElseThrow(() -> new ResourceNotFoundException("Policy not found: " + policyNumber)));
     }
 
+    @Transactional
     public Page<PolicyResponse> listForCustomer(String username, Pageable pageable) {
         Customer customer = customerRepository.findByUserUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer profile not found for user: " + username));
@@ -165,6 +167,7 @@ public class PolicyService {
         return policyRepository.findByAgentId(agentId, pageable).map(this::toResponse);
     }
 
+    @Transactional
     public Page<PolicyResponse> listAll(Pageable pageable) {
         return policyRepository.findAll(pageable).map(this::toResponse);
     }

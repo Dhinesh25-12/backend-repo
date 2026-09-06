@@ -96,6 +96,7 @@ public class PaymentService {
         return receipt.getBytes(StandardCharsets.UTF_8);
     }
 
+    @Transactional
     public Page<PaymentResponse> listForCustomer(String username, Pageable pageable) {
         Customer customer = customerRepository.findByUserUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer profile not found for user: " + username));

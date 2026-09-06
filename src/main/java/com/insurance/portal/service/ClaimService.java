@@ -83,13 +83,14 @@ public class ClaimService {
         return toResponse(claimRepository.findByClaimNumber(claimNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Claim not found: " + claimNumber)));
     }
-
+    @Transactional
     public Page<ClaimResponse> listForCustomer(String username, Pageable pageable) {
         Customer customer = customerRepository.findByUserUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer profile not found for user: " + username));
         return claimRepository.findByCustomerId(customer.getId(), pageable).map(this::toResponse);
     }
 
+    @Transactional
     public Page<ClaimResponse> listByCustomerId(Long customerId, Pageable pageable) {
         return claimRepository.findByCustomerId(customerId, pageable).map(this::toResponse);
     }
