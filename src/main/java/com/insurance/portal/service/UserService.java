@@ -2,10 +2,13 @@ package com.insurance.portal.service;
 
 import com.insurance.portal.dto.request.UpdateProfileRequest;
 import com.insurance.portal.dto.request.UpdateUserRoleRequest;
+import com.insurance.portal.dto.request.UpdateUserRolesRequest;
 import com.insurance.portal.dto.response.UserResponse;
 import com.insurance.portal.entity.AppUser;
 import com.insurance.portal.entity.Customer;
 import com.insurance.portal.entity.Role;
+import com.insurance.portal.entity.RoleName;
+import com.insurance.portal.exception.BadRequestException;
 import com.insurance.portal.exception.ResourceNotFoundException;
 import com.insurance.portal.repository.AppUserRepository;
 import com.insurance.portal.repository.CustomerRepository;
@@ -18,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -64,6 +68,28 @@ public class UserService {
                 .orElseThrow(() -> new IllegalStateException("Role not seeded: " + request.role()));
         HashSet<Role> roles = new HashSet<>();
         roles.add(role);
+        user.setRoles(roles);
+        appUserRepository.save(user);
+        return toResponse(user);
+    }
+
+    @Transactional
+    public UserResponse updateUserRoles(Long userId, UpdateUserRolesRequest request) {
+        AppUser user = appUserRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
+
+        boolean wasAdmin = user.getRoles().stream().anyMatch(r -> r.getName() == RoleName.ADMIN);
+        boolean willBeAdmin = request.roles().contains(RoleName.ADMIN);
+        if (wasAdmin && !willBeAdmin && appUserRepository.countByRoles_Name(RoleName.ADMIN) <= 1) {
+            throw new BadRequestException("Cannot remove the last remaining ADMIN user");
+        }
+
+        Set<Role> roles = new HashSet<>();
+        for (RoleName roleName : request.roles()) {
+            Role role = roleRepository.findByName(roleName)
+                    .orElseThrow(() -> new IllegalStateException("Role not seeded: " + roleName));
+            roles.add(role);
+        }
         user.setRoles(roles);
         appUserRepository.save(user);
         return toResponse(user);
