@@ -37,7 +37,7 @@ public class UserService {
 
     public UserResponse getProfile(String username) {
         AppUser user = findByUsername(username);
-        return toProfileResponse(user);
+        return toProfileResponse(user, customerRepository.findByUserId(user.getId()).orElse(null));
     }
 
     @Transactional
@@ -59,7 +59,7 @@ public class UserService {
             customer.setKycIdNumber(request.kycIdNumber());
             customerRepository.save(customer);
         }
-        return toProfileResponse(user);
+        return toProfileResponse(user, customer);
     }
 
     /**
@@ -71,7 +71,7 @@ public class UserService {
     public void changePassword(String username, ChangePasswordRequest request) {
         AppUser user = findByUsername(username);
         if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
-            throw new BadRequestException("Invalid username or password");
+            throw new BadRequestException("Current password is incorrect");
         }
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         appUserRepository.save(user);
@@ -138,9 +138,8 @@ public class UserService {
     }
 
     /** Profile responses additionally expose the customer/KYC details when the user is a customer. */
-    private UserResponse toProfileResponse(AppUser user) {
+    private UserResponse toProfileResponse(AppUser user, Customer customer) {
         UserResponse base = toResponse(user);
-        Customer customer = customerRepository.findByUserId(user.getId()).orElse(null);
         if (customer == null) {
             return base;
         }
