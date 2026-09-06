@@ -22,6 +22,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class PolicyService {
 
     private final PolicyRepository policyRepository;
