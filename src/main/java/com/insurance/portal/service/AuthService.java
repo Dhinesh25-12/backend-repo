@@ -69,7 +69,7 @@ public class AuthService {
         SecurityUser securityUser = new SecurityUser(user);
         String token = jwtService.generateToken(securityUser);
         List<String> roleNames = roles.stream().map(r -> r.getName().name()).collect(Collectors.toList());
-        return new AuthResponse(token, user.getId(), user.getUsername(), roleNames);
+        return buildAuthResponse(token, user, roleNames);
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -82,6 +82,25 @@ public class AuthService {
         SecurityUser securityUser = new SecurityUser(user);
         String token = jwtService.generateToken(securityUser);
         List<String> roleNames = user.getRoles().stream().map(r -> r.getName().name()).collect(Collectors.toList());
-        return new AuthResponse(token, user.getId(), user.getUsername(), roleNames);
+        return buildAuthResponse(token, user, roleNames);
+    }
+
+    private AuthResponse buildAuthResponse(String token, AppUser user, List<String> roleNames) {
+        String fullName = buildFullName(user.getFirstName(), user.getLastName());
+        AuthResponse.UserSummary userSummary = new AuthResponse.UserSummary(
+                user.getId(), user.getUsername(), user.getEmail(), fullName, roleNames, user.isActive());
+        return new AuthResponse(token, jwtService.getExpirationSeconds(), userSummary);
+    }
+
+    private String buildFullName(String firstName, String lastName) {
+        String first = firstName == null ? "" : firstName.trim();
+        String last = lastName == null ? "" : lastName.trim();
+        if (first.isEmpty()) {
+            return last;
+        }
+        if (last.isEmpty()) {
+            return first;
+        }
+        return first + " " + last;
     }
 }

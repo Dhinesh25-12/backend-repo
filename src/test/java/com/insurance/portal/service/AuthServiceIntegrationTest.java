@@ -43,11 +43,19 @@ class AuthServiceIntegrationTest {
         AuthResponse registerResponse = authService.register(registerRequest);
 
         assertThat(registerResponse.token()).isNotBlank();
-        assertThat(registerResponse.roles()).containsExactly("CUSTOMER");
+        assertThat(registerResponse.tokenType()).isEqualTo("Bearer");
+        assertThat(registerResponse.expiresIn()).isNotNull().isPositive();
+        assertThat(registerResponse.user()).isNotNull();
+        assertThat(registerResponse.user().username()).isEqualTo("janedoe");
+        assertThat(registerResponse.user().email()).isEqualTo("janedoe@example.com");
+        assertThat(registerResponse.user().fullName()).isEqualTo("Jane Doe");
+        assertThat(registerResponse.user().roles()).containsExactly("CUSTOMER");
 
         AuthResponse loginResponse = authService.login(new LoginRequest("janedoe", "Password123!"));
         assertThat(loginResponse.token()).isNotBlank();
-        assertThat(loginResponse.username()).isEqualTo("janedoe");
+        assertThat(loginResponse.expiresIn()).isNotNull().isPositive();
+        assertThat(loginResponse.user().username()).isEqualTo("janedoe");
+        assertThat(loginResponse.user().id()).isEqualTo(registerResponse.user().id());
     }
 
     @Test
