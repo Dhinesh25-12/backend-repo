@@ -58,10 +58,24 @@ class CustomerServiceTest {
                 .kycIdType("PASSPORT").kycIdNumber("X123").build();
     }
 
+    private PolicyRepository.PolicyCustomerCount policyCount(Long customerId, long total) {
+        return new PolicyRepository.PolicyCustomerCount() {
+            @Override
+            public Long getCustomerId() {
+                return customerId;
+            }
+
+            @Override
+            public long getTotal() {
+                return total;
+            }
+        };
+    }
+
     @Test
     void listCustomersWithoutQueryUsesFindAll() {
         when(customerRepository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(customer)));
-        when(policyRepository.countByCustomerId(3L)).thenReturn(2L);
+        when(policyRepository.countGroupedByCustomerIds(List.of(3L))).thenReturn(List.of(policyCount(3L, 2L)));
 
         Page<CustomerResponse> page = customerService.listCustomers(null, pageable);
 
@@ -79,11 +93,12 @@ class CustomerServiceTest {
     @Test
     void listCustomersWithQueryUsesSearch() {
         when(customerRepository.search("doe", pageable)).thenReturn(new PageImpl<>(List.of(customer)));
-        when(policyRepository.countByCustomerId(3L)).thenReturn(0L);
+        when(policyRepository.countGroupedByCustomerIds(List.of(3L))).thenReturn(List.of());
 
         Page<CustomerResponse> page = customerService.listCustomers("  doe  ", pageable);
 
         assertThat(page.getContent()).hasSize(1);
+        assertThat(page.getContent().get(0).policyCount()).isZero();
         verify(customerRepository, never()).findAll(pageable);
     }
 
@@ -110,7 +125,7 @@ class CustomerServiceTest {
 
     @Test
     void listPoliciesDelegatesToPolicyService() {
-        when(customerRepository.findById(3L)).thenReturn(Optional.of(customer));
+        when(customerRepository.existsById(3L)).thenReturn(true);
         when(policyService.listByCustomerId(3L, pageable)).thenReturn(Page.empty());
 
         customerService.listPolicies(3L, pageable);
@@ -120,7 +135,7 @@ class CustomerServiceTest {
 
     @Test
     void listClaimsDelegatesToClaimService() {
-        when(customerRepository.findById(3L)).thenReturn(Optional.of(customer));
+        when(customerRepository.existsById(3L)).thenReturn(true);
         when(claimService.listByCustomerId(3L, pageable)).thenReturn(Page.empty());
 
         customerService.listClaims(3L, pageable);
@@ -130,7 +145,7 @@ class CustomerServiceTest {
 
     @Test
     void listClaimsThrowsForUnknownCustomer() {
-        when(customerRepository.findById(42L)).thenReturn(Optional.empty());
+        when(customerRepository.existsById(42L)).thenReturn(false);
 
         assertThatThrownBy(() -> customerService.listClaims(42L, pageable))
                 .isInstanceOf(ResourceNotFoundException.class);

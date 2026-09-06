@@ -14,6 +14,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class CustomerService {
@@ -27,21 +31,29 @@ public class CustomerService {
         Page<Customer> page = StringUtils.hasText(query)
                 ? customerRepository.search(query.trim(), pageable)
                 : customerRepository.findAll(pageable);
-        return page.map(this::toResponse);
+        Map<Long, Long> policyCounts = policyCountsFor(page.getContent());
+        return page.map(customer -> toResponse(customer, policyCounts.getOrDefault(customer.getId(), 0L)));
     }
 
     public CustomerResponse getCustomer(Long id) {
-        return toResponse(findById(id));
+        Customer customer = findById(id);
+        return toResponse(customer, policyRepository.countByCustomerId(customer.getId()));
     }
 
     public Page<PolicyResponse> listPolicies(Long customerId, Pageable pageable) {
-        findById(customerId);
+        verifyCustomerExists(customerId);
         return policyService.listByCustomerId(customerId, pageable);
     }
 
     public Page<ClaimResponse> listClaims(Long customerId, Pageable pageable) {
-        findById(customerId);
+        verifyCustomerExists(customerId);
         return claimService.listByCustomerId(customerId, pageable);
+    }
+
+    private void verifyCustomerExists(Long id) {
+        if (!customerRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Customer not found: " + id);
+        }
     }
 
     private Customer findById(Long id) {
@@ -49,7 +61,17 @@ public class CustomerService {
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found: " + id));
     }
 
-    private CustomerResponse toResponse(Customer customer) {
+    private Map<Long, Long> policyCountsFor(List<Customer> customers) {
+        if (customers.isEmpty()) {
+            return Map.of();
+        }
+        List<Long> ids = customers.stream().map(Customer::getId).toList();
+        return policyRepository.countGroupedByCustomerIds(ids).stream()
+                .collect(Collectors.toMap(PolicyRepository.PolicyCustomerCount::getCustomerId,
+                        PolicyRepository.PolicyCustomerCount::getTotal));
+    }
+
+    private CustomerResponse toResponse(Customer customer, long policyCount) {
         AppUser user = customer.getUser();
         return new CustomerResponse(
                 customer.getId(),
@@ -68,7 +90,7 @@ public class CustomerService {
                 customer.getPostalCode(),
                 customer.getKycIdType(),
                 customer.getKycIdNumber(),
-                policyRepository.countByCustomerId(customer.getId())
+                policyCount
         );
     }
 
