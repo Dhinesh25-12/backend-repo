@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: insurance-portal-db
+    environment:
+      MYSQL_DATABASE: insurance
+      MYSQL_ROOT_PASSWORD: "0000"
+    ports:
+      - "3306:3306"
+    volumes:
+      - insurance_portal_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p0000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: insurance-portal-app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:mysql://db:3306/insurance
+      DB_USERNAME: root
+      DB_PASSWORD: "0000"
+      JWT_SECRET: change-this-super-secret-key-for-jwt-signing-please-1234567890
+      SERVER_PORT: 8081
+    ports:
+      - "8081:8081"
+
+volumes:
+  insurance_portal_data:
