@@ -27,5 +27,6 @@ public interface PolicyRepository extends JpaRepository<Policy, Long> {
         long getTotal();
     }
     long countByCustomerIdAndStatus(Long customerId, PolicyStatus status);
+    long countByCustomerId(Long customerId);
     List<Policy> findTop5ByOrderByCreatedAtDesc();
 }

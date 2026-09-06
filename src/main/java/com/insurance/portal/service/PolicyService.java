@@ -155,6 +155,10 @@ public class PolicyService {
         return policyRepository.findByCustomerId(customer.getId(), pageable).map(this::toResponse);
     }
 
+    public Page<PolicyResponse> listByCustomerId(Long customerId, Pageable pageable) {
+        return policyRepository.findByCustomerId(customerId, pageable).map(this::toResponse);
+    }
+
     public Page<PolicyResponse> listForAgent(Long agentId, Pageable pageable) {
         return policyRepository.findByAgentId(agentId, pageable).map(this::toResponse);
     }

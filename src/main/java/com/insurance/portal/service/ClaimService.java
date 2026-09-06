@@ -90,6 +90,10 @@ public class ClaimService {
         return claimRepository.findByCustomerId(customer.getId(), pageable).map(this::toResponse);
     }
 
+    public Page<ClaimResponse> listByCustomerId(Long customerId, Pageable pageable) {
+        return claimRepository.findByCustomerId(customerId, pageable).map(this::toResponse);
+    }
+
     public Page<ClaimResponse> listByPolicy(Long policyId, Pageable pageable) {
         return claimRepository.findByPolicyId(policyId, pageable).map(this::toResponse);
     }
