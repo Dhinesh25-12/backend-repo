@@ -52,7 +52,7 @@ class DashboardServiceTest {
         when(paymentRepository.findTop5ByOrderByCreatedAtDesc()).thenReturn(List.of());
         when(reportService.monthlyRevenueTrend()).thenReturn(List.<MonthlyRevenueReport>of());
 
-        when(policyRepository.countGroupedByProductCategory()).thenReturn(List.of(
+        when(policyRepository.countGroupedByProductCategory(PolicyStatus.ACTIVE)).thenReturn(List.of(
                 categoryCount("Health Insurance", 2L),
                 categoryCount("Motor Insurance", 1L),
                 categoryCount("Life Insurance", 1L)

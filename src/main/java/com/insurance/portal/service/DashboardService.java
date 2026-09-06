@@ -61,7 +61,7 @@ public class DashboardService {
 
     private List<PolicySplitItem> buildPolicySplit() {
         List<PolicySplitItem> policySplit = new ArrayList<>();
-        for (PolicyRepository.PolicyCategoryCount row : policyRepository.countGroupedByProductCategory()) {
+        for (PolicyRepository.PolicyCategoryCount row : policyRepository.countGroupedByProductCategory(PolicyStatus.ACTIVE)) {
             policySplit.add(PolicySplitItem.builder()
                     .category(row.getCategory())
                     .count((int) row.getTotal())
