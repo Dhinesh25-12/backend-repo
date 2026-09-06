@@ -1,5 +1,6 @@
 package com.insurance.portal.controller;
 
+import com.insurance.portal.dto.request.ChangePasswordRequest;
 import com.insurance.portal.dto.request.UpdateProfileRequest;
 import com.insurance.portal.dto.request.UpdateUserRoleRequest;
 import com.insurance.portal.dto.response.UserResponse;
@@ -31,6 +32,13 @@ public class UserController {
     public ResponseEntity<UserResponse> updateProfile(Authentication authentication,
                                                        @Valid @RequestBody UpdateProfileRequest request) {
         return ResponseEntity.ok(userService.updateProfile(authentication.getName(), request));
+    }
+
+    @PostMapping("/me/password")
+    public ResponseEntity<Void> changePassword(Authentication authentication,
+                                               @Valid @RequestBody ChangePasswordRequest request) {
+        userService.changePassword(authentication.getName(), request);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping
