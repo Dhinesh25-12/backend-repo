@@ -27,6 +27,7 @@ public class PolicyService {
     private final PolicyRepository policyRepository;
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
+    private final PlatformSettingService platformSettingService;
 
     @Transactional
     public PolicyResponse purchasePolicy(String username, PurchasePolicyRequest request) {
