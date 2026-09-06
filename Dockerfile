@@ -23,11 +23,11 @@ USER spring:spring
 
 COPY --from=build /workspace/target/*.jar app.jar
 
-EXPOSE 8080
+EXPOSE 8081
 
 ENV JAVA_OPTS=""
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:${SERVER_PORT:-8080}/actuator/health/liveness || exit 1
+    CMD curl -f http://localhost:${SERVER_PORT:-8081}/actuator/health/liveness || exit 1
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
