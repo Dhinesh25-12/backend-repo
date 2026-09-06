@@ -30,6 +30,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -56,6 +57,21 @@ class ClaimControllerAliasTest {
     private ClaimResponse sampleClaim() {
         return new ClaimResponse(1L, "CLM-2024-ABC", 1L, "POL-2024-ABC", 1L, LocalDate.now(),
                 "Accident", BigDecimal.valueOf(1000), "SETTLED", null, "Approved");
+    }
+
+    @Test
+    @WithMockUser(username = "customer1", roles = "CUSTOMER")
+    void fileAcceptsMultipartFormData() throws Exception {
+        when(claimService.fileClaim(anyString(), any())).thenReturn(sampleClaim());
+
+        mockMvc.perform(multipart("/api/claims")
+                        .param("policyId", "1")
+                        .param("incidentDate", "2024-01-01")
+                        .param("description", "Accident")
+                        .param("claimAmount", "1000"))
+                .andExpect(status().isOk());
+
+        verify(claimService).fileClaim(anyString(), any());
     }
 
     @Test
