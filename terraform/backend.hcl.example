@@ -1,0 +1,5 @@
+bucket         = "insurance-portal-tfstate"
+key            = "insurance-portal/terraform.tfstate"
+region         = "us-east-1"
+dynamodb_table = "insurance-portal-tf-locks"
+encrypt        = true
