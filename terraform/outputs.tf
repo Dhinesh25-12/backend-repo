@@ -23,6 +23,16 @@ output "alb_dns_name" {
   value       = module.compute.alb_dns_name
 }
 
+output "web_security_group_id" {
+  description = "Security group ID intended for a shared frontend/UI compute tier (e.g. the ui-repo EC2 instances) that reuses this VPC instead of provisioning its own network stack."
+  value       = module.security_groups.web_security_group_id
+}
+
+output "alb_security_group_id" {
+  description = "Security group ID for the application load balancer."
+  value       = module.security_groups.alb_security_group_id
+}
+
 output "ecr_repository_url" {
   description = "URL of the ECR repository to push application images to."
   value       = module.compute.ecr_repository_url
