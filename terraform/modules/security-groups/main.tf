@@ -103,3 +103,46 @@ resource "aws_security_group_rule" "db_ingress_from_ecs" {
   source_security_group_id = aws_security_group.ecs_service.id
   description              = "Allow ECS service to reach the database port"
 }
+
+# ---------------------------------------------------------------------------
+# Web tier security group - accepts inbound HTTP/HTTPS from the internet.
+#
+# Intended for a separate frontend/UI compute tier (e.g. EC2 instances
+# serving a static SPA build) that shares this stack's VPC instead of
+# provisioning its own network/security-group resources. Not attached to
+# any resource in this stack; exposed via output for cross-repo/module reuse.
+# ---------------------------------------------------------------------------
+
+resource "aws_security_group" "web" {
+  name        = "${local.name_prefix}-web-sg"
+  description = "Security group for frontend/UI compute instances sharing this VPC"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    description = "HTTP from internet"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "HTTPS from internet"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "All outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${local.name_prefix}-web-sg"
+  }
+}
