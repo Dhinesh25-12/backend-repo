@@ -102,6 +102,12 @@ variable "container_environment" {
   default     = {}
 }
 
+variable "jwt_secret_arn" {
+  description = "ARN of a Secrets Manager secret (plaintext string) holding the JWT signing secret, e.g. as created by aws/secrets-setup.sh. Leave empty to fall back to the application's default (insecure) JWT_SECRET."
+  type        = string
+  default     = ""
+}
+
 # ---------------------------------------------------------------------------
 # Database (RDS PostgreSQL)
 # ---------------------------------------------------------------------------

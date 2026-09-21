@@ -106,8 +106,11 @@ resource "aws_iam_role_policy_attachment" "execution_managed" {
 
 data "aws_iam_policy_document" "execution_secrets" {
   statement {
-    actions   = ["secretsmanager:GetSecretValue"]
-    resources = [var.db_credentials_secret_arn]
+    actions = ["secretsmanager:GetSecretValue"]
+    resources = compact([
+      var.db_credentials_secret_arn,
+      var.jwt_secret_arn,
+    ])
   }
 }
 
@@ -161,11 +164,13 @@ resource "aws_ecs_task_definition" "app" {
           value = value
         }
       ]
-      secrets = [
+      secrets = concat([
         { name = "DB_URL", valueFrom = "${var.db_credentials_secret_arn}:DB_URL::" },
         { name = "DB_USERNAME", valueFrom = "${var.db_credentials_secret_arn}:DB_USERNAME::" },
         { name = "DB_PASSWORD", valueFrom = "${var.db_credentials_secret_arn}:DB_PASSWORD::" }
-      ]
+        ], var.jwt_secret_arn != "" ? [
+        { name = "JWT_SECRET", valueFrom = var.jwt_secret_arn }
+      ] : [])
       logConfiguration = {
         logDriver = "awslogs"
         options = {
