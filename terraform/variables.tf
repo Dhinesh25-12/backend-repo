@@ -109,13 +109,13 @@ variable "jwt_secret_arn" {
 }
 
 # ---------------------------------------------------------------------------
-# Database (RDS PostgreSQL)
+# Database (RDS MySQL)
 # ---------------------------------------------------------------------------
 
 variable "db_engine_version" {
-  description = "PostgreSQL engine version for RDS."
+  description = "MySQL engine version for RDS."
   type        = string
-  default     = "16.4"
+  default     = "8.0.35"
 }
 
 variable "db_instance_class" {

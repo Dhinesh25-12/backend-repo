@@ -10,7 +10,7 @@ Management Portal backend using modular Terraform.
 | `modules/network`                | VPC, public/private/database subnets, internet gateway, NAT gateway(s), route tables |
 | `modules/security-groups`         | Security groups for the ALB, ECS service, and RDS database (least-privilege ingress) |
 | `modules/compute`                 | ECR repository, ECS Fargate cluster/service/task definition, Application Load Balancer, IAM roles, CloudWatch log group |
-| `modules/database`                | RDS PostgreSQL instance, DB subnet group, master credentials stored in Secrets Manager |
+| `modules/database`                | RDS MySQL instance, DB subnet group, master credentials stored in Secrets Manager |
 | `modules/storage`                 | S3 bucket (encrypted, versioned, blocked public access) for policy/claim documents |
 
 The root module (`main.tf`) wires these modules together, passing outputs

@@ -21,7 +21,7 @@ container_environment = {
   CORS_ALLOWED_ORIGINS = "https://example.com"
 }
 
-db_engine_version        = "16.4"
+db_engine_version        = "8.0.35"
 db_instance_class        = "db.t3.micro"
 db_allocated_storage     = 20
 db_name                  = "insurance_portal"

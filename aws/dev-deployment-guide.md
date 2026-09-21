@@ -19,7 +19,7 @@ with the concrete values already wired up for this account/environment. See
 | Public subnets | `10.0.0.0/24`, `10.0.1.0/24` |
 | Private (app) subnets | `10.0.10.0/24`, `10.0.11.0/24` |
 | Database subnets | `10.0.20.0/24`, `10.0.21.0/24` |
-| RDS engine | PostgreSQL `16.4` |
+| RDS engine | MySQL `8.0.35` |
 | RDS instance class | `db.t3.micro` |
 | RDS Multi-AZ | `false` |
 | RDS backup retention | `7` days |
