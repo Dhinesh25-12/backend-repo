@@ -146,6 +146,13 @@ curl -H "Authorization: ******" \
   "http://localhost:8080/api/reports/admin/top-customers?limit=10"
 ```
 
+## Deploying to AWS
+
+See [`DEPLOYMENT.md`](DEPLOYMENT.md) for a step-by-step guide to provisioning
+the AWS infrastructure (VPC/ECS Fargate/RDS/S3) via the Terraform stack in
+`terraform/`, building/pushing the container image, and wiring up the
+companion `ui-repo` frontend.
+
 ## Known Limitations
 
 - Payment/claims document handling is metadata-only (`documentUrl` string); no real object storage integration.
