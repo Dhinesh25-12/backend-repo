@@ -62,5 +62,6 @@ module "compute" {
   desired_count             = var.desired_count
   health_check_path         = var.health_check_path
   container_environment     = var.container_environment
+  jwt_secret_arn            = var.jwt_secret_arn
   db_credentials_secret_arn = module.database.db_credentials_secret_arn
 }

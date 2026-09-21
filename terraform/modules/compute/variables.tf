@@ -58,3 +58,9 @@ variable "container_environment" {
 variable "db_credentials_secret_arn" {
   type = string
 }
+
+variable "jwt_secret_arn" {
+  description = "ARN of a Secrets Manager secret (plaintext string) holding the JWT signing secret. Leave empty to fall back to the application's default (insecure) JWT_SECRET."
+  type        = string
+  default     = ""
+}

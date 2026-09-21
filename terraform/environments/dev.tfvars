@@ -9,19 +9,26 @@ private_subnet_cidrs  = ["10.0.10.0/24", "10.0.11.0/24"]
 database_subnet_cidrs = ["10.0.20.0/24", "10.0.21.0/24"]
 single_nat_gateway    = true
 
-container_image   = "<ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/insurance-portal:latest"
+# AWS account: 522826260049 (Dhinesh-aws-account)
+container_image   = "522826260049.dkr.ecr.us-east-1.amazonaws.com/insurance-portal-dev:latest"
 container_port    = 8081
 task_cpu          = 512
 task_memory       = 1024
-desired_count     = 2
+desired_count     = 1
 health_check_path = "/actuator/health/liveness"
 
 container_environment = {
   SERVER_PORT          = "8081"
-  CORS_ALLOWED_ORIGINS = "https://example.com"
+  CORS_ALLOWED_ORIGINS = "http://localhost:4200"
 }
 
-db_engine_version        = "16.4"
+# ARN of the Secrets Manager secret created by aws/secrets-setup.sh, e.g.
+# arn:aws:secretsmanager:us-east-1:522826260049:secret:insurance-portal-dev/jwt-secret-AbCdEf
+# Leave empty until the secret has been created, then set it here (or pass
+# via -var) before applying so the ECS task picks up JWT_SECRET securely.
+jwt_secret_arn = ""
+
+db_engine_version        = "8.0.35"
 db_instance_class        = "db.t3.micro"
 db_allocated_storage     = 20
 db_name                  = "insurance_portal"

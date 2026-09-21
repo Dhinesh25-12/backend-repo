@@ -23,7 +23,7 @@ resource "aws_db_subnet_group" "this" {
 
 resource "aws_db_instance" "this" {
   identifier     = "${local.name_prefix}-db"
-  engine         = "postgres"
+  engine         = "mysql"
   engine_version = var.engine_version
 
   instance_class    = var.instance_class
@@ -34,7 +34,7 @@ resource "aws_db_instance" "this" {
   db_name  = var.db_name
   username = var.db_username
   password = random_password.master.result
-  port     = 5432
+  port     = 3306
 
   db_subnet_group_name   = aws_db_subnet_group.this.name
   vpc_security_group_ids = [var.security_group_id]
@@ -64,7 +64,7 @@ resource "aws_secretsmanager_secret" "db_credentials" {
 resource "aws_secretsmanager_secret_version" "db_credentials" {
   secret_id = aws_secretsmanager_secret.db_credentials.id
   secret_string = jsonencode({
-    DB_URL      = "jdbc:postgresql://${aws_db_instance.this.address}:${aws_db_instance.this.port}/${var.db_name}"
+    DB_URL      = "jdbc:mysql://${aws_db_instance.this.address}:${aws_db_instance.this.port}/${var.db_name}"
     DB_USERNAME = var.db_username
     DB_PASSWORD = random_password.master.result
   })
